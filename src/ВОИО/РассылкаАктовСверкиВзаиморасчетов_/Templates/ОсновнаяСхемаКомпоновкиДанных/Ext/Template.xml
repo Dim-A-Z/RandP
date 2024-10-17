@@ -1,0 +1,178 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<DataCompositionSchema xmlns="http://v8.1c.ru/8.1/data-composition-system/schema" xmlns:dcscom="http://v8.1c.ru/8.1/data-composition-system/common" xmlns:dcscor="http://v8.1c.ru/8.1/data-composition-system/core" xmlns:dcsset="http://v8.1c.ru/8.1/data-composition-system/settings" xmlns:v8="http://v8.1c.ru/8.1/data/core" xmlns:v8ui="http://v8.1c.ru/8.1/data/ui" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<dataSource>
+		<name>ИсточникДанных1</name>
+		<dataSourceType>Local</dataSourceType>
+	</dataSource>
+	<dataSet xsi:type="DataSetQuery">
+		<name>НеоплаченныеСчетаПокупателям</name>
+		<field xsi:type="DataSetFieldField">
+			<dataPath>Контрагент</dataPath>
+			<field>Контрагент</field>
+			<title xsi:type="v8:LocalStringType">
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Контрагент</v8:content>
+				</v8:item>
+			</title>
+			<role>
+				<dcscom:dimension>true</dcscom:dimension>
+			</role>
+		</field>
+		<field xsi:type="DataSetFieldField">
+			<dataPath>Организация</dataPath>
+			<field>Организация</field>
+		</field>
+		<field xsi:type="DataSetFieldField">
+			<dataPath>ДоговорКонтрагента</dataPath>
+			<field>ДоговорКонтрагента</field>
+			<title xsi:type="v8:LocalStringType">
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Договор контрагента</v8:content>
+				</v8:item>
+			</title>
+		</field>
+		<field xsi:type="DataSetFieldField">
+			<dataPath>УчетнаяЗаписьОрганизации</dataPath>
+			<field>УчетнаяЗаписьОрганизации</field>
+			<title xsi:type="v8:LocalStringType">
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Учетная запись организации</v8:content>
+				</v8:item>
+			</title>
+			<attributeUseRestriction>
+				<field>true</field>
+				<condition>true</condition>
+				<group>true</group>
+				<order>true</order>
+			</attributeUseRestriction>
+		</field>
+		<field xsi:type="DataSetFieldField">
+			<dataPath>АдресЭлектроннойПочты</dataPath>
+			<field>АдресЭлектроннойПочты</field>
+			<title xsi:type="v8:LocalStringType">
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Адрес электронной почты</v8:content>
+				</v8:item>
+			</title>
+		</field>
+		<dataSource>ИсточникДанных1</dataSource>
+		<query>ВЫБРАТЬ
+	Контрагенты.Ссылка КАК Контрагент,
+	ДоговорыКонтрагентов.Организация КАК Организация,
+	ДоговорыКонтрагентов.Ссылка КАК ДоговорКонтрагента
+ПОМЕСТИТЬ КонтрагентыИДоговора
+ИЗ
+	Справочник.Контрагенты КАК Контрагенты
+		ВНУТРЕННЕЕ СОЕДИНЕНИЕ Справочник.ДоговорыКонтрагентов КАК ДоговорыКонтрагентов
+		ПО Контрагенты.Ссылка = ДоговорыКонтрагентов.Владелец
+			И (НЕ ДоговорыКонтрагентов.ДоговорЗакрыт)
+			И (НЕ ДоговорыКонтрагентов.ПометкаУдаления)
+ГДЕ
+	НЕ Контрагенты.ПометкаУдаления
+
+СГРУППИРОВАТЬ ПО
+	Контрагенты.Ссылка,
+	ДоговорыКонтрагентов.Организация,
+	ДоговорыКонтрагентов.Ссылка
+
+ИНДЕКСИРОВАТЬ ПО
+	Контрагент
+;
+
+////////////////////////////////////////////////////////////////////////////////
+ВЫБРАТЬ
+	КонтрагентыКонтактнаяИнформация.Ссылка КАК Контрагент,
+	КонтрагентыКонтактнаяИнформация.Представление КАК АдресЭП
+ПОМЕСТИТЬ АдресаЭП
+ИЗ
+	Справочник.Контрагенты.КонтактнаяИнформация КАК КонтрагентыКонтактнаяИнформация
+ГДЕ
+	КонтрагентыКонтактнаяИнформация.Ссылка В
+			(ВЫБРАТЬ
+				КонтрагентыИДоговора.Контрагент КАК Контрагент
+			ИЗ
+				КонтрагентыИДоговора КАК КонтрагентыИДоговора)
+	И КонтрагентыКонтактнаяИнформация.ВидДляСписка = ЗНАЧЕНИЕ(Справочник.ВидыКонтактнойИнформации.EmailКонтрагенты)
+
+ИНДЕКСИРОВАТЬ ПО
+	Контрагент
+;
+
+////////////////////////////////////////////////////////////////////////////////
+ВЫБРАТЬ
+	КонтрагентыИДоговора.Контрагент КАК Контрагент,
+	КонтрагентыИДоговора.Организация КАК Организация,
+	КонтрагентыИДоговора.ДоговорКонтрагента КАК ДоговорКонтрагента,
+	УчетныеЗаписиЭПОрганизаций.УчетнаяЗапись КАК УчетнаяЗаписьОрганизации,
+	АдресаЭП.АдресЭП КАК АдресЭлектроннойПочты
+ИЗ
+	КонтрагентыИДоговора КАК КонтрагентыИДоговора
+		ЛЕВОЕ СОЕДИНЕНИЕ АдресаЭП КАК АдресаЭП
+		ПО КонтрагентыИДоговора.Контрагент = АдресаЭП.Контрагент
+		ЛЕВОЕ СОЕДИНЕНИЕ РегистрСведений.УчетныеЗаписиЭПОрганизаций КАК УчетныеЗаписиЭПОрганизаций
+		ПО КонтрагентыИДоговора.Организация = УчетныеЗаписиЭПОрганизаций.Организация
+
+УПОРЯДОЧИТЬ ПО
+	Организация</query>
+	</dataSet>
+	<settingsVariant>
+		<dcsset:name>НеоплаченныеСчетаПокупателям</dcsset:name>
+		<dcsset:presentation xsi:type="v8:LocalStringType">
+			<v8:item>
+				<v8:lang>ru</v8:lang>
+				<v8:content>Неоплаченные счета покупателям</v8:content>
+			</v8:item>
+		</dcsset:presentation>
+		<dcsset:settings xmlns:style="http://v8.1c.ru/8.1/data/ui/style" xmlns:sys="http://v8.1c.ru/8.1/data/ui/fonts/system" xmlns:web="http://v8.1c.ru/8.1/data/ui/colors/web" xmlns:win="http://v8.1c.ru/8.1/data/ui/colors/windows">
+			<dcsset:selection>
+				<dcsset:item xsi:type="dcsset:SelectedItemField">
+					<dcsset:field>Организация</dcsset:field>
+				</dcsset:item>
+				<dcsset:item xsi:type="dcsset:SelectedItemField">
+					<dcsset:field>Контрагент</dcsset:field>
+				</dcsset:item>
+				<dcsset:item xsi:type="dcsset:SelectedItemField">
+					<dcsset:field>ДоговорКонтрагента</dcsset:field>
+				</dcsset:item>
+				<dcsset:item xsi:type="dcsset:SelectedItemField">
+					<dcsset:field>УчетнаяЗаписьОрганизации</dcsset:field>
+				</dcsset:item>
+				<dcsset:item xsi:type="dcsset:SelectedItemField">
+					<dcsset:field>АдресЭлектроннойПочты</dcsset:field>
+				</dcsset:item>
+			</dcsset:selection>
+			<dcsset:filter>
+				<dcsset:userSettingID>156bf7ca-27fc-41f3-b937-4fbfd049df8b</dcsset:userSettingID>
+			</dcsset:filter>
+			<dcsset:order>
+				<dcsset:userSettingID>09563695-d38f-485e-909e-a8ed925b6fd3</dcsset:userSettingID>
+			</dcsset:order>
+			<dcsset:outputParameters>
+				<dcscor:item xsi:type="dcsset:SettingsParameterValue">
+					<dcscor:parameter>ГоризонтальноеРасположениеОбщихИтогов</dcscor:parameter>
+					<dcscor:value xsi:type="dcscor:DataCompositionTotalPlacement">None</dcscor:value>
+				</dcscor:item>
+				<dcscor:item xsi:type="dcsset:SettingsParameterValue">
+					<dcscor:parameter>ВертикальноеРасположениеОбщихИтогов</dcscor:parameter>
+					<dcscor:value xsi:type="dcscor:DataCompositionTotalPlacement">None</dcscor:value>
+				</dcscor:item>
+				<dcscor:item xsi:type="dcsset:SettingsParameterValue">
+					<dcscor:parameter>ВыводитьЗаголовок</dcscor:parameter>
+					<dcscor:value xsi:type="dcsset:DataCompositionTextOutputType">Auto</dcscor:value>
+				</dcscor:item>
+			</dcsset:outputParameters>
+			<dcsset:item xsi:type="dcsset:StructureItemGroup">
+				<dcsset:order>
+					<dcsset:item xsi:type="dcsset:OrderItemAuto"/>
+				</dcsset:order>
+				<dcsset:selection>
+					<dcsset:item xsi:type="dcsset:SelectedItemAuto"/>
+				</dcsset:selection>
+			</dcsset:item>
+		</dcsset:settings>
+	</settingsVariant>
+</DataCompositionSchema>
