@@ -11,6 +11,15 @@
 				<Event name="OnChange">Реквизит1ПриИзменении</Event>
 			</Events>
 		</InputField>
+		<InputField name="Реквизит2" id="4">
+			<DataPath>Реквизит2</DataPath>
+			<ExtendedEditMultipleValues>true</ExtendedEditMultipleValues>
+			<ContextMenu name="Реквизит2КонтекстноеМеню" id="5"/>
+			<ExtendedTooltip name="Реквизит2РасширеннаяПодсказка" id="6"/>
+			<Events>
+				<Event name="TextEditEnd">Реквизит2ОкончаниеВводаТекста</Event>
+			</Events>
+		</InputField>
 	</ChildItems>
 	<Attributes>
 		<Attribute name="Объект" id="1">
@@ -20,6 +29,15 @@
 			<MainAttribute>true</MainAttribute>
 		</Attribute>
 		<Attribute name="Реквизит1" id="2">
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="Реквизит2" id="3">
 			<Type>
 				<v8:Type>xs:string</v8:Type>
 				<v8:StringQualifiers>
